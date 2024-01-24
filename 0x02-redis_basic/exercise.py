@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Redis exercise
-"""
+""" Redis exercise module """
 import redis
 import uuid
 from typing import Union, Optional, Callable
@@ -9,9 +7,7 @@ from functools import wraps
 
 
 def parse_line(line: str, total_size: int, status_codes: dict) -> tuple:
-    """
-    Parse log line and update total_size and status_codes.
-    """
+    """ fun that parse log line and update total_size and status_codes """
     try:
         parts = line.split()
         size = int(parts[-1])
@@ -26,21 +22,16 @@ def parse_line(line: str, total_size: int, status_codes: dict) -> tuple:
 
 
 class Cache:
-    """
-    Cache class for storing data in Redis
-    """
+    """ Cache Class for storing data in redis. """
 
     def __init__(self) -> None:
-        """
-        Initializes a Cache instance with a Redis client
-        and flushes the database.
-        """
+        """ initializes a Cache instance with a Redis client then flushes the database """
         self._redis = redis.Redis()
         self._redis.flushdb()
 
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
-        Generates a random key, stores the input data in Redis using the key
+        generates random key, stores the input data in Redis using the key
         and returns the key.
         """
         key = str(uuid.uuid4())
@@ -53,8 +44,8 @@ class Cache:
         fn: Optional[Callable] = None
     ) -> Union[str, bytes, int, float]:
         """
-        Retrieves data from Redis using the key
-        and applies an optional conversion function.
+        retrieves the data from Redis using the key
+        and applies an optional conversion function
         """
         result = self._redis.get(key)
         if result and fn:
@@ -62,33 +53,22 @@ class Cache:
         return result
 
     def get_str(self, key: str) -> str:
-        """
-        Retrieves data from Redis as a string.
-        """
+        """ retrieves the data from Redis as a string """
         return self.get(key, fn=lambda x: x.decode("utf-8"))
 
     def get_int(self, key: str) -> int:
-        """
-        Retrieves data from Redis as an integer.
-        """
+        """ retrieves the data from Redis as an integer """
         return self.get(key, fn=int)
 
     def increment(self, key: str) -> int:
-        """
-        Increments the value stored at the specified key in Redis.
-        """
+        """ increments the value stored at the specified key in redis """
         return self._redis.incr(key)
 
     def call_history(method: Callable) -> Callable:
-        """
-        Decorator to store the history of inputs and outputs for a function.
-        """
+        """ decorator to store the history of the inputs and outputs for a function """
         @wraps(method)
         def wrapper(self, *args, **kwargs):
-            """
-            Wrapper function to store input and output history
-            and call the original method.
-            """
+            """ function to store input and output history and call the original method """
             input_key = "{}:inputs".format(method.__qualname__)
             output_key = "{}:outputs".format(method.__qualname__)
 
@@ -102,17 +82,15 @@ class Cache:
     @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
-        Generates a random key, stores the input data in Redis using the key
-        and returns the key.
+        generate a random key, stores the input data in Redis using the key
+        and returns it
         """
         key = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
 
     def replay(self, method: Callable) -> None:
-        """
-        Function to display the history of calls of a particular function.
-        """
+        """ function to display the history of calls of a particular function """
         input_key = "{}:inputs".format(method.__qualname__)
         output_key = "{}:outputs".format(method.__qualname__)
 
