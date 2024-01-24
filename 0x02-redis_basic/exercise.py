@@ -10,7 +10,7 @@ def count_calls(method: Callable) -> Callable:
     """ decorator for Cache class methods to track call count """
     @wraps(method)
     def wrapper(self: Any, *args, **kwargs) -> str:
-        """ wraps that calls method and adds the call count before execution """
+        """ wraps that calls method and adds call count before execution """
         self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
     return wrapper
